@@ -23,20 +23,39 @@ def parse_llm_output(raw_text: str) -> Dict[str, Any]:
     
     # Count braces to find the matching closing brace for the first '{'
     depth = 0
-    end = -1
-    for i, char in enumerate(text[start:], start):
-        if char == "{":
+    in_string = False
+    escape_next = False
+
+    for i, ch in enumerate(text[start:], start=start):
+        # Previous character was a backslash inside a string — skip this char
+        if escape_next:
+            escape_next = False
+            continue
+
+        # Backslash inside a string escapes the next character
+        if ch == "\\" and in_string:
+            escape_next = True
+            continue
+
+        # Toggle string mode on unescaped double-quote
+        if ch == '"':
+            in_string = not in_string
+            continue
+
+        # While inside a string, braces are just data — ignore them
+        if in_string:
+            continue
+
+        if ch == "{":
             depth += 1
-        elif char == "}":
+        elif ch == "}":
             depth -= 1
             if depth == 0:
-                end = i + 1
+                json_str = text[start : i + 1]
                 break
-    
-    if end == -1:
+
+    else:
         raise ValueError("Unmatched braces in JSON output")
-    
-    json_str = text[start:end]
 
     # 4. Final Parse
     try:
