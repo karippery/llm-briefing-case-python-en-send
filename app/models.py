@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class BriefingRequest(BaseModel):
-    transcript: str = Field(..., min_length=1, max_length=10000, description="Raw meeting transcript in plain text.")
+    transcript: str = Field(..., min_length=1, description="Raw meeting transcript in plain text.")
 
 
 class ActionItem(BaseModel):
@@ -36,8 +36,8 @@ class BriefingResponse(BaseModel):
     next_steps: list[str] = Field(default_factory=list)
     meta: BriefingMeta
 
-    # Allow forward compatibility for candidates who add fields intentionally.
-    model_config = {"extra": "allow"}
+    # The LLM could inject arbitrary fields (__proto__, unexpected keys) that get serialised into the response. Change to "ignore"
+    model_config = {"extra": "ignore"}
 
     @classmethod
     def from_untrusted(cls, data: Any) -> "BriefingResponse":
