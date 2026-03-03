@@ -7,7 +7,6 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi import status
 from pydantic import ValidationError
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
 from app.llm.parsing import parse_llm_output
@@ -52,13 +51,13 @@ def create_briefing(req: BriefingRequest, request: Request) -> dict[str, Any] | 
 
     logger.info("briefing_request", extra={"request_id": request_id, "transcript_length": len(req.transcript)})
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
-    def _generate_with_retry(provider, prompt):
-        return provider.generate(prompt)
+    # @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
+    # def _generate_with_retry(provider, prompt):
+    #     return provider.generate(prompt)
 
     try:
         prompt = build_briefing_prompt(req.transcript)
-        raw = _generate_with_retry(provider, prompt)
+        raw = provider.generate(prompt)
         data = parse_llm_output(raw)
 
         if isinstance(data, dict):
@@ -93,14 +92,14 @@ def create_briefing(req: BriefingRequest, request: Request) -> dict[str, Any] | 
         response.headers["X-Request-Id"] = request_id
         return response
 
-    except TimeoutError as e:
+    except (TimeoutError, RuntimeError) as e:
         # 504: Provider timeout
         logger.warning(
             "briefing_provider_timeout",
             extra={"request_id": request_id}
         )
         return JSONResponse(
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={"error": "provider_timeout", "request_id": request_id}
         )
 

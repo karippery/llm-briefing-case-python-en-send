@@ -57,7 +57,7 @@ class TestBriefingEndpoint:
 
         monkeypatch.setattr(main_module, "provider", TimeoutProvider())
         resp = client.post("/v1/briefings", json={"transcript": VALID_TRANSCRIPT})
-        assert resp.status_code == 504
+        assert resp.status_code == 503
 
 
     def test_fenced_output_parsed_correctly(self):
