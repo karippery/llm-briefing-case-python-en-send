@@ -18,12 +18,25 @@ def parse_llm_output(raw_text: str) -> Dict[str, Any]:
     # 3. Attempt to find the JSON structure
     # This finds the first '{' and the last '}'
     start = text.find("{")
-    end = text.rfind("}")
-    
-    if start == -1 or end == -1:
+    if start == -1:
         raise ValueError("No JSON object found in output")
     
-    json_str = text[start:end+1]
+    # Count braces to find the matching closing brace for the first '{'
+    depth = 0
+    end = -1
+    for i, char in enumerate(text[start:], start):
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                break
+    
+    if end == -1:
+        raise ValueError("Unmatched braces in JSON output")
+    
+    json_str = text[start:end]
 
     # 4. Final Parse
     try:
