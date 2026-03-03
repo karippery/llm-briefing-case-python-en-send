@@ -38,7 +38,7 @@ Yes — transcript is interpolated directly. Mitigated via downstream parsing, P
 - Why did you pick this limit (rough reasoning is fine)? Without a limit, an attacker could send 10MB+ payloads, consuming memory, CPU (parsing/LLM), and bandwidth. 50KB is small enough to mitigate this.	Even with the stub provider, a real LLM would charge per token. 35K chars ≈ 10K–15K tokens — reasonable for a single request without exploding costs.Larger inputs = longer processing time. 35KB keeps latency predictable for synchronous HTTP requests.
 
 ## 5) Testing strategy
-- What do your most important tests cover? Critical Path Coverage ,  Error Handling & Edge Cases,  Security & Privacy, Unit-Level Validation. I need make sure i have atleast 80% test coverage before push code.
+- What do your most important tests cover? Critical Path Coverage ,  Error Handling & Edge Cases,  Security & Privacy, Unit-Level Validation. I need make sure i have atleast 80% test coverage before push code. this code base total test coverage is 93%
 - What did you intentionally not test (and why)? Real LLM provider,Authentication / rate limiting
 
 ## 6) Architecture question (short, 1–2 paragraphs)
