@@ -1,0 +1,5 @@
+Projektstatus Update:
+- Thema: Launch der neuen Plattform
+- Risiko: Abhängigkeit von Vendor X, Lieferdatum unklar
+- To-do: Max schickt bis Freitag ein Update an alle Stakeholder
+- Nächster Schritt: Termin für Tech-Review nächste Woche planen

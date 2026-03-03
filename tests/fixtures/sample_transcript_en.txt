@@ -1,0 +1,5 @@
+Weekly sync:
+We discussed incident follow-up and agreed to improve monitoring.
+Action: Alice will draft the postmortem by next Wednesday.
+Risk: On-call load is increasing.
+Next step: schedule a deep dive with the platform team.
