@@ -49,7 +49,7 @@ class StubProvider:
         if "[preamble]" in prompt:
             return f"Sure, here is the JSON you requested:\n{raw}\n"
         if "[badjson]" in prompt:
-            return raw + ","
+            return "not json at all!!!"
         if "[timeout]" in prompt:
             raise TimeoutError("Simulated provider timeout")
 

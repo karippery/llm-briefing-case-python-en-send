@@ -63,26 +63,28 @@ def create_briefing(req: BriefingRequest, request: Request) -> dict[str, Any] | 
         return response
 
     except ValidationError as e:
-        # 422: LLM output didn't match expected schema
         logger.warning(
             "briefing_validation_failed",
             extra={"request_id": request_id, "error_type": "validation"}
         )
-        return JSONResponse(
+        response = JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"error": "validation_failed", "request_id": request_id}
+            content={"error": {"code": "validation_error", "request_id": request_id}}
         )
+        response.headers["X-Request-Id"] = request_id
+        return response
 
     except ValueError as e:
-        # 400: LLM output wasn't valid JSON / couldn't be parsed
         logger.warning(
             "briefing_parse_failed",
             extra={"request_id": request_id, "error_type": "parse"}
         )
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content={"error": "parse_failed", "request_id": request_id}
+        response = JSONResponse(
+            status_code=status.HTTP_502_BAD_GATEWAY,  # ← This is what the test expects!
+            content={"error": {"code": "parse_error", "request_id": request_id}}
         )
+        response.headers["X-Request-Id"] = request_id
+        return response
 
     except TimeoutError as e:
         # 504: Provider timeout
