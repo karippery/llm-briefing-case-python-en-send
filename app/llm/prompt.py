@@ -2,14 +2,16 @@ from __future__ import annotations
 
 
 def build_briefing_prompt(transcript: str) -> str:
-    # Intentionally minimal prompt. Candidates may improve structure/guardrails.
+    """Build a structured prompt with strong JSON guardrails."""
     return f"""You are a helpful assistant. Create a structured meeting briefing.
 
-Return ONLY valid JSON with the following keys:
-- summary: string
-- action_items: array of objects with keys (owner, task, due_date)
-- risks: array of strings
-- next_steps: array of strings
+Required JSON structure:
+{{
+  "summary": "string (1-2 sentence summary)",
+  "action_items": [{{"owner": "string", "task": "string", "due_date": "string or null"}}],
+  "risks": ["string"],
+  "next_steps": ["string"]
+}}
 
 Transcript:
 {transcript}
