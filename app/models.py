@@ -41,16 +41,22 @@ class BriefingResponse(BaseModel):
 
     @classmethod
     def from_untrusted(cls, data: Any) -> "BriefingResponse":
-        """Validate and normalize untrusted LLM output."""
-        # Normalize action_items due_date before validation
-        if isinstance(data.get("action_items"), list):
-            for item in data["action_items"]:
-                if isinstance(item, dict) and item.get("due_date") == "":
-                    item["due_date"] = None
-        
-        # Ensure required fields exist with defaults
+        """Validate and normalise untrusted LLM output into a BriefingResponse."""
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected dict from LLM, got {type(data).__name__}")
+
         data.setdefault("risks", [])
         data.setdefault("next_steps", [])
         data.setdefault("action_items", [])
-        
+
+        # Coerce list fields – LLM sometimes returns a bare string
+        for list_field in ("risks", "next_steps"):
+            if isinstance(data[list_field], str):
+                data[list_field] = [data[list_field]] if data[list_field] else []
+
+        # Normalise empty due_date strings inside action_items
+        for item in data.get("action_items", []):
+            if isinstance(item, dict) and item.get("due_date") == "":
+                item["due_date"] = None
+
         return cls.model_validate(data)
