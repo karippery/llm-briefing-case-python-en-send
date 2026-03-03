@@ -12,6 +12,8 @@ from app.llm.prompt import build_briefing_prompt
 from app.llm.provider import build_provider
 from app.logging_config import configure_logging, get_logger
 from app.models import BriefingRequest, BriefingResponse
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 configure_logging(settings.log_level)
 logger = get_logger("app")
@@ -21,9 +23,16 @@ app = FastAPI(title="LLM Briefing Service", version="0.1.0")
 provider = build_provider(settings.llm_provider, settings.llm_api_key)
 
 
-@app.on_event("startup")
-def _startup() -> None:
+# @app.on_event("startup")
+# def _startup() -> None:
+#     logger.info("startup", extra={"settings": repr(settings), "provider": provider.name})
+
+# modern lifespan pattern
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("startup", extra={"settings": repr(settings), "provider": provider.name})
+    yield
+    logger.info("shutdown")
 
 
 @app.get("/health")
