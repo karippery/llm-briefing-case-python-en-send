@@ -31,7 +31,7 @@ def health() -> dict[str, str]:
     return {"status": "ok", "provider": provider.name}
 
 
-@app.post("/v1/briefings")
+@app.post("/v1/briefings", response_model=None)
 def create_briefing(req: BriefingRequest, request: Request) -> dict[str, Any] | JSONResponse:
     request_id = request.headers.get("X-Request-Id") or str(uuid.uuid4())
 
