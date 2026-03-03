@@ -47,6 +47,13 @@ def health() -> dict[str, str]:
 def create_briefing(req: BriefingRequest, request: Request) -> dict[str, Any] | JSONResponse:
     request_id = request.headers.get("X-Request-Id") or str(uuid.uuid4())
 
+    if len(req.transcript) > settings.max_transcription_length:
+        return JSONResponse(
+            status_code=413,
+            content={"error": {"code": "transcript_too_large", "request_id": request_id}}
+        )
+
+
     logger.info("briefing_request", extra={"request_id": request_id, "transcript_length": len(req.transcript)})
 
     try:
