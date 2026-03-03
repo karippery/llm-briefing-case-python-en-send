@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi import status
 from pydantic import ValidationError
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
 from app.llm.parsing import parse_llm_output
@@ -19,11 +20,6 @@ from typing import AsyncGenerator
 
 configure_logging(settings.log_level)
 logger = get_logger("app")
-
-
-# @app.on_event("startup")
-# def _startup() -> None:
-#     logger.info("startup", extra={"settings": repr(settings), "provider": provider.name})
 
 # modern lifespan pattern
 @asynccontextmanager
@@ -56,9 +52,13 @@ def create_briefing(req: BriefingRequest, request: Request) -> dict[str, Any] | 
 
     logger.info("briefing_request", extra={"request_id": request_id, "transcript_length": len(req.transcript)})
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
+    def _generate_with_retry(provider, prompt):
+        return provider.generate(prompt)
+
     try:
         prompt = build_briefing_prompt(req.transcript)
-        raw = provider.generate(prompt)
+        raw = _generate_with_retry(provider, prompt)
         data = parse_llm_output(raw)
 
         if isinstance(data, dict):
